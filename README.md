@@ -1,3 +1,7 @@
+Randomized_Video_player.py README.md
+
+###########################################################################################################
+
 This Python script creates a simple web-based video player that randomly
 selects and plays episodes from whatever dir full of videos you want. The application is built with
 Flask and features:
