@@ -1,5 +1,5 @@
 This Python script creates a simple web-based video player that randomly
-selects and plays episodes from *Family Guy*. The application is built with
+selects and plays episodes from whatever dir full of videos you want. The application is built with
 Flask and features:
 
 - **Random Episode Selection**: Automatically picks a random episode from
