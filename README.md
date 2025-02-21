@@ -16,7 +16,7 @@ one finishes.
 
 **Key Features:**
 - Uses Flask for rendering and serving web content
-- Includes basic HTML styling for a modern viewing experience
+- Dark mode on by default
 - Auto-scrolls to display updates as new episodes load
 
 **Note:** This script is intended for local use. Pls don't host publicly!!
