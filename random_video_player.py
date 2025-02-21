@@ -52,7 +52,7 @@ html_template = """
         }
 
         function scrollToBottom() {
-            window.scrollTo(0, document.body.scrollHeight); // Scroll to the bottom of the page to help with some devices
+            window.scrollTo(0, document.body.scrollHeight); // Scroll to the bottom of the page to help with my tv but this can be deleted
         }
 
         function playNextVideo() {
