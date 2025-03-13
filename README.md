@@ -8,7 +8,7 @@ Flask and features:
 
 - **Random Episode Selection**: Automatically picks a random episode from
 which ever TV Show you want, you can add as many TV Shows as you want, just to be sure to update available_folders.
-- **Saves Previoulsy Chosen TV Show**: If you choose Show F one night and the next night, reload your site, Show F will still be selected.
+- **Saves Previoulsy Chosen TV Show**: If you choose **Show F** one night and the next night, reload your site, **Show F** will still be selected.
 - **Responsive HTML Template**: Includes a dark mode (bc who wants to get blinded), full-screen
 viewing, and basic controls.
 - **Volume Control**: Adjusts the video volume to 22% upon page load, this can be changed but some of my .mp4s were loud.
