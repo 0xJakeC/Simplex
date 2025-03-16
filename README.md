@@ -8,6 +8,7 @@ Flask and features:
 
 - **Random Episode Selection**: Automatically picks a random episode from
 which ever TV Show you want, you can add as many TV Shows as you want, just to be sure to update available_folders.
+- **Watch From Any Device**: Any device connected to your home network can be used to watch your shows.
 - **Saves Previoulsy Chosen TV Show**: If you choose _**Show F**_ one night and the next night, reload your site, _**Show F**_ will still be selected.
 - **Responsive HTML Template**: Includes a dark mode (bc who wants to get blinded), full-screen
 viewing, and basic controls.
