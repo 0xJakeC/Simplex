@@ -1,22 +1,21 @@
 import os
 import random
-from flask import Flask, render_template_string, request, redirect, url_for, send_from_directory
+from flask import Flask, render_template_string, request, redirect, url_for, send_from_directory, jsonify
 
 app = Flask(__name__)
 
 # Base directory
-base_directory = "Enter_the_Path_to_all_of_your_TV_Show_Folders"
+base_directory = "/media/mte-relayer/Videos"
 
 # Predefined list of folders, rename how you want
 available_folders = {
     "Name 1": "Name_1_Folder",
     "Name 2": "Name_2_Folder",
     etc
-    
 }
 
 # Default folder for when the page first loads or the service or script is restarted
-selected_folder = "Name_1_Folder"
+selected_folder = "Family_Guy"
 
 # HTML template that I found and modified to display the video and folder selection form
 html_template = """
@@ -27,12 +26,11 @@ html_template = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Random Video Player</title>
     <style>
-        /* Dark mode styling */
         body {
             margin: 0;
             padding: 0;
-            background-color: black; /* Dark background */
-            color: white; /* Light text */
+            background-color: black;
+            color: white;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -41,12 +39,12 @@ html_template = """
             font-family: Arial, sans-serif;
         }
         video {
-            width: 80%; /* Adjust video width as needed */
-            max-height: 80vh; /* Adjust video height as needed */
+            width: 80%;
+            max-height: 80vh;
         }
         h1 {
             margin-bottom: 20px;
-            font-size: 1.5rem; /* Half the default size because the text was too big */
+            font-size: 1.5rem;
         }
         form {
             margin-bottom: 20px;
@@ -68,20 +66,35 @@ html_template = """
         }
     </style>
     <script>
-        function setVolume() {
-            const videoElement = document.getElementById("videoPlayer");
-            // You can delete or change the setVolume function, my files were just loud
-            videoElement.volume = 0.22; // Set volume to 22%
-        }
+        let currentVideo = "{{ video_name }}";
 
-        function playNextVideo() {
-            // Reload the page to get a new random video
-            window.location.reload();
+        function initPlayer() {
+            const videoElement = document.getElementById("videoPlayer");
+            videoElement.volume = 0.15; //volume set to 15% becuase my files were loud
+
+            // Enter fullscreen when video starts playing
+            videoElement.addEventListener('play', () => {
+                if (!document.fullscreenElement) {
+                    videoElement.requestFullscreen().catch(e => {});
+                }
+            });
+
+            // Load next video when current ends
+            videoElement.addEventListener('ended', () => {
+                fetch('/next_video')
+                    .then(response => response.json())
+                    .then(data => {
+                        currentVideo = data.video_name;
+                        document.querySelector('h1').textContent = `Now Playing: ${currentVideo}`;
+                        videoElement.src = data.video_url;
+                        videoElement.load();
+                        videoElement.play();
+                    });
+            });
         }
     </script>
 </head>
-// scrollToBottom can also be deleted if not needed but it helps when I use my TV to access Simplex
-<body onload="setVolume(); scrollToBottom();">
+<body onload="initPlayer()">
     <h1>Now Playing: {{ video_name }}</h1>
     <form action="/set_folder" method="post">
         <label for="folder">Select TV Show:</label>
@@ -92,7 +105,7 @@ html_template = """
         </select>
         <input type="submit" value="Play">
     </form>
-    <video id="videoPlayer" controls autoplay onended="playNextVideo()">
+    <video id="videoPlayer" controls autoplay playsinline>
         <source src="{{ video_url }}" type="{{ video_mime_type }}">
         Your browser does not support the video tag.
     </video>
@@ -114,12 +127,38 @@ def index():
     # Randomly select a video file
     random_video = random.choice(video_files)
     video_url = f"/video/{random_video}"
-    video_mime_type = "video/mp4"  # Default MIME type
+    video_mime_type = "video/mp4"
     if random_video.endswith('.mkv'):
         video_mime_type = "video/x-matroska"
     elif random_video.endswith('.avi'):
         video_mime_type = "video/x-msvideo"
     return render_template_string(html_template, video_name=random_video, video_url=video_url, video_mime_type=video_mime_type, available_folders=available_folders, selected_folder=selected_folder)
+
+@app.route('/next_video')
+def next_video():
+    global selected_folder
+    # Create the full directory path
+    video_directory = os.path.join(base_directory, selected_folder)
+
+    # Get all video files in the directory
+    video_files = [f for f in os.listdir(video_directory) if f.endswith(('.mp4', '.mkv', '.avi', '.mov'))]
+    if not video_files:
+        return jsonify({"error": "No videos found"}), 404
+
+    # Randomly select a video file
+    random_video = random.choice(video_files)
+    video_url = f"/video/{random_video}"
+    video_mime_type = "video/mp4"
+    if random_video.endswith('.mkv'):
+        video_mime_type = "video/x-matroska"
+    elif random_video.endswith('.avi'):
+        video_mime_type = "video/x-msvideo"
+
+    return jsonify({
+        "video_name": random_video,
+        "video_url": video_url,
+        "video_mime_type": video_mime_type
+    })
 
 @app.route('/set_folder', methods=['POST'])
 #Send the selected TV show back to the Pi
@@ -139,7 +178,7 @@ def video(filename):
         mimetype = "video/x-matroska"
     elif filename.endswith('.avi'):
         mimetype = "video/x-msvideo"
-    return send_from_directory(video_directory, filename, mimetype=mimetype)
+    return send_from_directory(video_directory, filename, mimetype=mimetype, conditional=True)
 
 if __name__ == '__main__':
     # Run the Flask app, you can delete (host='0.0.0.0', port=5000) if you do not want to access fom a separate device
